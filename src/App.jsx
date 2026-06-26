@@ -39,7 +39,7 @@ export default function App() {
       setLoading(true);
 
       const response = await fetch(
-        "/api/hacks/live"
+        "https://scrappy-server-ulvf.onrender.com/api/hacks/live"
       );
 
       const res = await response.json();
