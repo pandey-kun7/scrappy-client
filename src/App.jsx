@@ -13,7 +13,7 @@ export default function App() {
       setLoading(true);
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/hacks/live`
+        `https://scrappy-server-ulvf.onrender.com/api/hacks/live`
       );
 
       const res = await response.json();
