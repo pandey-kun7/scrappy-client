@@ -1,111 +1,57 @@
-# hack-scrappy
+# scrappy
 
-![hack-scrappy preview](image.png)
+![scrappy preview](image.png)
 
-hack-scrappy is a small full-stack project for browsing hackathons and related events in a calendar-style interface.
+`scrappy` is a React + Vite client for browsing hackathon events in a monthly calendar view. It loads event data from an API, groups events by registration start date, and shows details for the selected day.
 
-The frontend is built with React + Vite, while a lightweight Express server serves event data from a local JSON file. The UI groups events by registration start date, lets you move across months, and shows event details for the selected day.
+## Features
 
-## What it does
-
-- fetches live event data from a local API
-- shows events inside a monthly calendar view
-- highlights how many events fall on each day
-- opens a detail panel for the selected date
-- displays event info such as:
-  - event name
+- Monthly calendar UI for browsing events
+- Previous / next month navigation
+- Day cells that show event counts and a preview title
+- Detail panel for the selected date
+- Manual reload button for refreshing event data
+- Event details including:
+  - name
+  - logo
   - location
-  - paid/free status
+  - paid / free status
   - registration start and end dates
-  - team size
+  - team size range
   - skills
   - external event link
 
 ## Tech stack
 
 - React 19
-- Vite
+- Vite 8
 - Tailwind CSS 4
-- Express 5
-- Node.js
 - Oxlint
 
 ## Project structure
 
 ```text
-hack-scrappy/
+scrappy-client/
 ├─ src/
-│  ├─ App.jsx        # main calendar UI
-│  ├─ main.jsx       # React entry point
+│  ├─ App.jsx      # calendar UI and event fetching
 │  ├─ App.css
-│  └─ index.css
-├─ index.js          # Express API server
-├─ hack.json         # event data served by the API
-├─ h2s.json          # local source data snapshot
-├─ test1.json        # local source data snapshot
-├─ test2.json        # local source data snapshot
-├─ test.js           # script used to combine source data into hack.json
+│  ├─ index.css
+│  └─ main.jsx     # React entry point
+├─ image.png       # README preview image
+├─ index.html
 ├─ package.json
-└─ vite.config.js
+└─ vite.config.js  # Vite config with /api proxy
 ```
 
-## How data flows
+## Data source
 
-Event data is served from `hack.json`.
-
-The backend reads that file and exposes it through:
+The UI expects a backend API that exposes:
 
 ```text
 GET /api/hacks/live
 ```
 
-The React app fetches from:
-
-```text
-http://localhost:8001/api/hacks/live
-```
-
-There are also local source files such as `test1.json`, `test2.json`, and `h2s.json`. The `test.js` script combines data from those files and writes the final output into `hack.json`.
-
-## Getting started
-
-### 1. Install dependencies
-
-```bash
-npm install
-```
-
-### 2. Start the backend server
-
-```bash
-npm run start
-```
-
-This runs the Express server on port `8001`.
-
-### 3. Start the frontend
-
-In a second terminal:
-
-```bash
-npm run dev
-```
-
-Vite will start the frontend dev server and you can open the app in your browser.
-
-## Available scripts
-
-```bash
-npm run dev      # start Vite frontend
-npm run build    # create production build
-npm run preview  # preview production build
-npm run start    # start Express backend with nodemon
-npm run lint     # run oxlint
-```
-
-## API response shape
-
-The backend returns a JSON response in this format:
+The app expects a JSON response shaped like:
 
 ```json
 {
@@ -114,27 +60,86 @@ The backend returns a JSON response in this format:
 }
 ```
 
-Each event object can include fields like:
+Event objects may include fields such as:
 
 - `evnt_name`
+- `logo_url`
+- `location`
+- `paid`
 - `reg_started`
 - `reg_ended`
-- `paid`
-- `location`
-- `site`
-- `logo_url`
-- `skills`
 - `min_team_size`
 - `max_team_size`
+- `skills`
+- `site`
+
+## Running the app
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Start the frontend
+
+```bash
+npm run dev
+```
+
+This starts the Vite development server.
+
+## API configuration
+
+The current frontend uses two request styles:
+
+- On initial page load, it fetches from:
+
+  ```text
+  ${VITE_API_URL}/api/hacks/live
+  ```
+
+- The manual reload button fetches from:
+
+  ```text
+  /api/hacks/live
+  ```
+
+Vite is configured to proxy `/api` requests to `http://localhost:8001` during development.
+
+If you want the initial page load to work in development, create a `.env` file with:
+
+```env
+VITE_API_URL=http://localhost:8001
+```
+
+## Available scripts
+
+```bash
+npm run dev         # start the Vite dev server
+npm run build       # create a production build
+npm run preview     # preview the production build
+npm run lint        # run oxlint
+npm run start       # tries to run index.js
+npm run dev-server  # tries to run index.js with nodemon
+```
+
+## Current repository note
+
+`package.json` still includes backend-oriented scripts (`start` and `dev-server`), but there is no checked-in `index.js` server file in the current repository snapshot.
+
+That means this repo currently contains the client application, plus configuration for talking to an API, but not the backend implementation itself.
 
 ## Current behavior
 
+- The app loads event data into local React state
 - Events are placed on the calendar using `reg_started`
-- selecting a day shows all events for that date
-- the frontend currently expects the backend to be running locally on port `8001`
+- Clicking a day shows the events for that date
+- The selected day displays a detail panel below the calendar
+- The reload button can be used to re-fetch data
 
 ## Notes
 
-- This project currently uses local JSON data rather than a database
-- `hack.json` is the main file the app reads from at runtime
-- if the event dataset changes, regenerate or replace `hack.json` so the API serves the updated records
+- Development proxying is configured in `vite.config.js`
+- Tailwind is imported directly in `src/index.css`
+- The UI currently assumes the API is reachable locally during development unless you point `VITE_API_URL` elsewhere
